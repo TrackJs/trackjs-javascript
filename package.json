@@ -1,0 +1,29 @@
+{
+  "name": "trackjs-javascript",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test --workspace=packages/core",
+    "test:core": "npm run test --workspace=packages/core",
+    "test:core-integration": "npm run test:all --workspace=test/core",
+    "test:integration": "npm run test:all --workspace=test/integration",
+    "test:all": "npm run test:core && npm run test:core-integration",
+    "build": "npm run build --workspace=packages/core",
+    "dev:test-core": "cd test/core && npm run serve"
+  },
+  "author": {
+    "name": "TrackJS",
+    "email": "hello@trackjs.com",
+    "url": "https://trackjs.com/"
+  },
+  "license": "MIT",
+  "workspaces": [
+    "packages/core",
+    "packages/node",
+    "test/core"
+  ],
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^1.0.0"
+  }
+}

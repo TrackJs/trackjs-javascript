@@ -1,0 +1,41 @@
+{
+  "name": "@trackjs/core",
+  "version": "0.0.0",
+  "description": "Core functionality for a TrackJS Agent implementation generic to all platforms.",
+  "keywords": [
+    "debugging",
+    "error",
+    "error-handling",
+    "error-logging",
+    "error-monitoring",
+    "trackjs"
+  ],
+  "repository": "https://github.com/TrackJs/trackjs-javascript.git",
+  "homepage": "https://github.com/TrackJs/trackjs-javascript/tree/main/packages/core",
+  "author": {
+    "name": "TrackJS",
+    "email": "hello@trackjs.com",
+    "url": "https://trackjs.com/"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "tsc -p tsconfig.json --module esnext --outDir dist/esm",
+    "build:cjs": "tsc -p tsconfig.json --module commonjs --outDir dist/cjs",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly --outDir dist/types",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "test": "vitest",
+    "test:run": "vitest run"
+  }
+}

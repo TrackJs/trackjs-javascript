@@ -1,0 +1,21 @@
+{
+  "name": "@trackjs/test-core", 
+  "version": "1.0.0",
+  "description": "Test suite for @trackjs/core package",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:basic": "node node/basic-test.js",
+    "test:serializer": "node node/serializer-test.js", 
+    "test:extensibility": "node node/extensibility-test.js",
+    "test:browser": "npm run serve & echo 'Browser tests available at http://localhost:8000/browser/'",
+    "test:all": "npm run test:basic && npm run test:serializer && npm run test:extensibility",
+    "serve": "python3 -m http.server 8000"
+  },
+  "dependencies": {
+    "@trackjs/core": "file:../../packages/core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
