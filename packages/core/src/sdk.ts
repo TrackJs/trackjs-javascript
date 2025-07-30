@@ -1,11 +1,51 @@
-import { CapturePayload, ConsoleTelemetry, InstallOptions, NavigationTelemetry, NetworkTelemetry, TelemetryType, VisitorTelemetry } from "./types";
+import type { CapturePayload, ConsoleTelemetry, InstallOptions, NavigationTelemetry, NetworkTelemetry, TelemetryType, VisitorTelemetry } from "./types/";
+import { DefaultTransport } from "./transport";
 
+// Internal state
+let installed = false;
+let config: InstallOptions | null = null;
+
+// Default options for all optional properties
+const defaultOptions = {
+  application: '',
+  sessionId: '',
+  userId: '',
+  version: '',
+  metadata: {},
+  serializer: [],
+  transport: new DefaultTransport()
+};
+
+/**
+ * Whether TrackJS has been installed in the current environment.
+ */
 export function isInstalled(): boolean {
-  throw new Error("not implemented");
+  return installed;
 }
 
+/**
+ * Install TrackJS into the current environment.
+ *
+ * @param options Initial options for install.
+ */
 export function install(options: InstallOptions): void {
-  throw new Error("not implemented");
+  if (installed) {
+    throw new Error("TrackJS is already installed");
+  }
+  if (!options) {
+    throw new Error("TrackJS install options required")
+  }
+  if (!options.token) {
+    throw new Error("TrackJS token is required");
+  }
+
+  // Merge provided options with defaults
+  config = {
+    ...defaultOptions,
+    ...options
+  };
+
+  installed = true;
 }
 
 export function addMetadata(...args: [metadata: Record<string, string>]): void {

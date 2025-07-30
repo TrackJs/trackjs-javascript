@@ -1,2 +1,4 @@
 export * as TrackJS from './sdk';
-export * from './types';
+export { uuid } from './utils/';
+
+export type * from './types/';
