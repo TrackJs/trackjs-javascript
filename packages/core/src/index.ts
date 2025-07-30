@@ -1,8 +1,2 @@
-// Core exports
-export { Client } from './client';
-
-// Type exports
+export * as TrackJS from './sdk';
 export * from './types';
-
-// Utility exports
-export * from './utils';

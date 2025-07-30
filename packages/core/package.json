@@ -1,7 +1,7 @@
 {
   "name": "@trackjs/core",
   "version": "0.0.0",
-  "description": "Core functionality for a TrackJS Agent implementation generic to all platforms.",
+  "description": "Core functionality for a TrackJS Agent implementation compatible with all JavaScript platforms.",
   "keywords": [
     "debugging",
     "error",
