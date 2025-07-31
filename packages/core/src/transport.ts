@@ -1,12 +1,18 @@
+import { HTTPMethods } from "./types";
+
+/**
+ * Transport interface for sending data over the network. Provide a transport that
+ * can send an HTTP request for the environment.
+ */
 export interface Transport {
   send(request: TransportRequest): Promise<TransportResponse>;
 }
 
 export interface TransportRequest {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: HTTPMethods;
   url: string;
   headers?: Record<string, string>;
-  data?: any;
+  data?: string;
 }
 
 export interface TransportResponse {
@@ -16,35 +22,19 @@ export interface TransportResponse {
 }
 
 /**
- * Default transport that automatically selects the best available method
- * for sending HTTP requests based on the current environment.
+ * Default transport that utilizes the common `fetch` function. Throws an error if used when `fetch` is unavailable.
  */
-export class DefaultTransport implements Transport {
-  private readonly sendMethod: (request: TransportRequest) => Promise<TransportResponse>;
-
-  constructor() {
-    this.sendMethod = this.detectBestTransport();
-  }
+export class FetchTransport implements Transport {
 
   public async send(request: TransportRequest): Promise<TransportResponse> {
-    return this.sendMethod(request);
-  }
-
-  private detectBestTransport(): (request: TransportRequest) => Promise<TransportResponse> {
-    // Check for fetch API (modern browsers and Node.js 18+)
-    if (typeof fetch !== 'undefined') {
-      return this.fetchTransport.bind(this);
+    if (typeof fetch === "undefined") {
+      throw new Error("Fetch is not available. Provide a transport option to TrackJS");
     }
 
-    // Fallback to a no-op transport if nothing is available
-    return this.noopTransport.bind(this);
-  }
-
-  private async fetchTransport(request: TransportRequest): Promise<TransportResponse> {
     const response = await fetch(request.url, {
       method: request.method,
       headers: request.headers,
-      body: request.data ? JSON.stringify(request.data) : undefined,
+      body: request.data
     });
 
     const responseHeaders: Record<string, string> = {};
@@ -63,16 +53,8 @@ export class DefaultTransport implements Transport {
     return {
       status: response.status,
       headers: responseHeaders,
-      data,
+      data
     };
   }
 
-  private async noopTransport(_request: TransportRequest): Promise<TransportResponse> {
-    console.warn('No suitable transport method found. Request will not be sent.');
-    return {
-      status: 0,
-      headers: {},
-      data: null,
-    };
-  }
 }

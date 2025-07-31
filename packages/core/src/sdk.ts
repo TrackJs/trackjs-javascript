@@ -1,26 +1,40 @@
-import type { CapturePayload, ConsoleTelemetry, InstallOptions, NavigationTelemetry, NetworkTelemetry, TelemetryType, VisitorTelemetry } from "./types/";
-import { DefaultTransport } from "./transport";
+import { FetchTransport } from "./transport";
+import { Client } from "./Client";
+import { uuid } from "./utils";
 
-// Internal state
-let installed = false;
-let config: InstallOptions | null = null;
+import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types/";
 
-// Default options for all optional properties
-const defaultOptions = {
+let config: Options | null = null;
+let client: Client | null = null;
+
+const defaultOptions: Options = {
   application: '',
-  sessionId: '',
-  userId: '',
-  version: '',
+  correlationId: uuid(),
+  errorURL: 'https://capture.trackjs.com/capture/node',
   metadata: {},
+  onError: () => true,
   serializer: [],
-  transport: new DefaultTransport()
+  sessionId: '',
+  token: '',
+  transport: new FetchTransport(),
+  userId: '',
+  version: ''
 };
 
 /**
  * Whether TrackJS has been installed in the current environment.
  */
 export function isInstalled(): boolean {
-  return installed;
+  return !!client;
+}
+
+/**
+ * Uninstall TrackJS from the current environment.
+ * Primarily used for testing.
+ */
+export function uninstall(): void {
+  config = null;
+  client = null;
 }
 
 /**
@@ -28,24 +42,20 @@ export function isInstalled(): boolean {
  *
  * @param options Initial options for install.
  */
-export function install(options: InstallOptions): void {
-  if (installed) {
+export function install(options: Partial<Options> & { token: string }): void {
+  if (isInstalled()) {
     throw new Error("TrackJS is already installed");
   }
-  if (!options) {
-    throw new Error("TrackJS install options required")
-  }
-  if (!options.token) {
+  if (!options || !options.token) {
     throw new Error("TrackJS token is required");
   }
 
-  // Merge provided options with defaults
   config = {
     ...defaultOptions,
     ...options
   };
 
-  installed = true;
+  client = new Client(config);
 }
 
 export function addMetadata(...args: [metadata: Record<string, string>]): void {
@@ -64,8 +74,12 @@ export function addDependencies(...args: [dependencies: Record<string, string>])
   throw new Error("not implemented");
 }
 
-export function track(error: Error|object|string, options: { metadata: Record<string, string> }) {
-  throw new Error("not implemented")
+export function track(error: Error|object|string, options?: Partial<TrackOptions>): Promise<void> {
+  if (!client) {
+    throw new Error("TrackJS must be installed");
+  }
+
+  return client.track(error, options);
 }
 
 export function usage(): void {

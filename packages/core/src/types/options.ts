@@ -3,60 +3,96 @@ import { SerializeHandler } from "../utils";
 import type { UUID } from "./common";
 import type { CapturePayload } from "./payload";
 
-export interface InstallOptions extends Options {
+export interface TrackOptions {
   /**
-   * TrackJS Account Token
+   * How this error was captured by TrackJS
+   * @default "direct"
    */
-  token: UUID;
+  entry: string
 
   /**
-   * Custom functions for serializing objects to strings. Will execute before the default serializer.
+   * Metadata key-values to send with this error
    */
-  serializer?: Array<SerializeHandler>;
-
-  /**
-   * Custom transport function for sending data. Required if the current environment does not support `fetch`.
-   */
-  transport?: Transport;
+  metadata: Record<string, string>;
 }
 
 export interface Options {
 
   /**
    * TrackJS Application key.
+   *
+   * @default ""
    */
-  application?: string;
+  application: string;
 
   /**
    * Override the TrackJS-generated identifier to correlate errors together that share a common thread, session, or request.
+   *
+   * @default uuid()
    */
-  correlationId?: UUID;
+  correlationId: UUID;
 
   /**
-   * Customer-generated Id representing the current session.
+   * URL destination override for capturing errors.
+   *
+   * @default https://capture.trackjs.com/capture/node
    */
-  sessionId?: string;
-
-  /**
-   * Customer-generated Id representing the current user.
-   */
-  userId?: string;
-
-  /**
-   * Customer-generated Id representing the version of the running application.
-   */
-  version?: string;
+  errorURL: string;
 
   /**
    * Metadata key-values to set immediately
+   *
+   * @default {}
    */
-  metadata?: Record<string, string>;
+  metadata: Record<string, string>;
 
   /**
    * Custom handler to manipulate or suppress errors captured by the agent.
    * @param payload error payload to be sent to TrackJS.
    * @returns false will suppress the error from being sent.
+   *
+   * @default (payload) => true
    */
-  onError?: (payload: CapturePayload) => boolean;
+  onError: (payload: CapturePayload) => boolean;
+
+  /**
+   * Custom functions for serializing objects to strings. Will execute before the default serializer.
+   *
+   * @default []
+   */
+  serializer: Array<SerializeHandler>;
+
+  /**
+   * Customer-generated Id representing the current session.
+   *
+   * @default ""
+   */
+  sessionId: string;
+
+  /**
+   * TrackJS Account Token
+   */
+  token: string;
+
+  /**
+   * Custom transport function for sending data. Required if the current environment does not support `fetch`.
+   *
+   * @default FetchTransport
+   */
+  transport: Transport;
+
+  /**
+   * Customer-generated Id representing the current user.
+   *
+   * @default ""
+   */
+  userId: string;
+
+  /**
+   * Customer-generated Id representing the version of the running application.
+   *
+   * @default ""
+   */
+  version: string;
 
 }

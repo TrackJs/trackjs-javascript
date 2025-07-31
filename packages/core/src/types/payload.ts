@@ -1,10 +1,15 @@
-import type { ISO8601Date, UUID } from "./common";
+import type { ISO8601Date } from "./common";
 import type { ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, VisitorTelemetry } from "./telemetry";
 
 /**
  * Payload of an error sent to TrackJS.
  */
 export interface CapturePayload {
+
+  /**
+   * The agent package sending the error
+   */
+  agentPlatform?: string;
 
   /**
    * Stack Trace collected from async operations.
@@ -28,7 +33,7 @@ export interface CapturePayload {
     /**
      * Unique Id generated for the current context to combine related errors together.
      */
-    correlationId: UUID;
+    correlationId: string;
 
     /**
      * Customer-provided Session Id.
@@ -38,7 +43,7 @@ export interface CapturePayload {
     /**
      * TrackJS Account Token
      */
-    token: UUID;
+    token: string;
 
     /**
      * Customer-provided user identification
@@ -71,6 +76,16 @@ export interface CapturePayload {
     dependencies: {
       [name: string]: string
     };
+
+    /**
+     * The original location URL when the agent was installed.
+     */
+    originalUrl?: string;
+
+    /**
+     * Referrer location URL.
+     */
+    referrer?: string;
 
     /**
      * User Agent string
