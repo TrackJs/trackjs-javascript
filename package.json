@@ -11,7 +11,7 @@
     "build:core": "npm run build --workspace=packages/core",
     "test": "npm run test:core && npm run test:e2e-core",
     "test:core": "npm run test --workspace=packages/core",
-    "test:e2e-core": "npm run test --workspace=e2e/core"
+    "test:e2e-core": "npm run build:core && npm run test --workspace=e2e/core"
   },
   "author": {
     "name": "TrackJS",
