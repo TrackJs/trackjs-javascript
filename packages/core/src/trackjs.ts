@@ -22,29 +22,20 @@ const defaultOptions: Options = {
 };
 
 /**
- * Whether TrackJS has been installed in the current environment.
+ * Whether TrackJS has been initialized.
  */
-export function isInstalled(): boolean {
+export function isInitialized(): boolean {
   return !!client;
 }
 
 /**
- * Uninstall TrackJS from the current environment.
- * Primarily used for testing.
- */
-export function uninstall(): void {
-  config = null;
-  client = null;
-}
-
-/**
- * Install TrackJS into the current environment.
+ * Initialize the TrackJS agent.
  *
- * @param options Initial options for install.
+ * @param options Initial client options.
  */
-export function install(options: Partial<Options> & { token: string }): void {
-  if (isInstalled()) {
-    throw new Error("TrackJS is already installed");
+export function initialize(options: Partial<Options> & { token: string }): void {
+  if (isInitialized()) {
+    throw new Error("TrackJS is already initialized");
   }
   if (!options || !options.token) {
     throw new Error("TrackJS token is required");
@@ -76,7 +67,7 @@ export function addDependencies(...args: [dependencies: Record<string, string>])
 
 export function track(error: Error|object|string, options?: Partial<TrackOptions>): Promise<void> {
   if (!client) {
-    throw new Error("TrackJS must be installed");
+    throw new Error("TrackJS must be initialized");
   }
 
   return client.track(error, options);
@@ -92,4 +83,13 @@ export function onError(callback: (payload: CapturePayload) => boolean) : void {
 
 export function onTelemetry(callback: (type: TelemetryType, telemetry: ConsoleTelemetry|NavigationTelemetry|NetworkTelemetry|VisitorTelemetry) => boolean) : void {
   throw new Error("not implemented");
+}
+
+/**
+ * Removes the TrackJS initialization and options.
+ * Primarily used for testing.
+ */
+export function destroy(): void {
+  config = null;
+  client = null;
 }

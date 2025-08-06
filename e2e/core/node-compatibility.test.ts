@@ -21,22 +21,22 @@ class MockTransport implements Transport {
 }
 
 beforeEach(() => {
-  TrackJS.uninstall();
+  TrackJS.destroy();
 });
 
 test('TrackJS.install({...}) with minimum options', () => {
   expect(() => {
-    TrackJS.install({
+    TrackJS.initialize({
       token: "test token"
     });
   }).not.toThrow();
-  expect(TrackJS.isInstalled()).toBe(true);
+  expect(TrackJS.isInitialized()).toBe(true);
 });
 
 test('TrackJS.track() can track errors after install', async () => {
   const mockTransport = new MockTransport();
 
-  TrackJS.install({
+  TrackJS.initialize({
     token: 'test token',
     transport: mockTransport
   });
