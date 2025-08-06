@@ -2,7 +2,7 @@ import { FetchTransport } from "./transport";
 import { Client } from "./Client";
 import { uuid } from "./utils";
 
-import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types/";
+import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
 
 let config: Options | null = null;
 let client: Client | null = null;

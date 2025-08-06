@@ -19,5 +19,6 @@
     "strictBindCallApply": false,
     "target": "es2020",
     "noUncheckedIndexedAccess": true
-  }
+  },
+  "exclude": ["node_modules", "dist"]
 }
