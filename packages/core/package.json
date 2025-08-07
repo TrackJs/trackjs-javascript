@@ -40,7 +40,7 @@
     "build:esm": "tsc -p tsconfig.json --module esnext --outDir dist/esm",
     "build:cjs": "tsc -p tsconfig.json --module commonjs --outDir dist/cjs",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly --outDir dist/types",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest"
