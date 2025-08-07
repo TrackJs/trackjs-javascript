@@ -15,6 +15,14 @@ export class Client {
     this.metadata = new Metadata(this.options.metadata);
   }
 
+  public addMetadata(metadata: Record<string, string>): void {
+    this.metadata.add(metadata);
+  }
+
+  public removeMetadata(metadata: Record<string, any>): void {
+    this.metadata.remove(metadata);
+  }
+
   /**
    * Track an error and send it to TrackJS
    */
