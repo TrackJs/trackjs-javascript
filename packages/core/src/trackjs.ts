@@ -1,5 +1,5 @@
-import { FetchTransport } from "./transport";
-import { Client } from "./Client";
+import { FetchTransport } from "./fetchTransport";
+import { Client } from "./client";
 import { uuid } from "./utils";
 
 import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
