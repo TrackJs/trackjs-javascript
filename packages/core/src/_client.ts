@@ -52,7 +52,7 @@ export class Client {
 
       customer: {
         application: this.config.application,
-        correlationId: this.config.correlationId || uuid(),
+        correlationId: this.config.correlationId,
         sessionId: this.config.sessionId,
         token: this.config.token,
         userId: this.config.userId,
