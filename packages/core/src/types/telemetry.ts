@@ -1,6 +1,8 @@
 import type { HTTPMethods, ISO8601Date, SeverityLevel } from "./common";
 
-export type TelemetryType = "console" | "network" | "navigation" | "visitor";
+export type TelemetryType = "console" | "network" | "nav" | "visitor";
+
+export type Telemetry = ConsoleTelemetry|NavigationTelemetry|NetworkTelemetry|VisitorTelemetry;
 
 export interface ConsoleTelemetry {
   /**

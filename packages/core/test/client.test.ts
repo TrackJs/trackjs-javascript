@@ -2,6 +2,7 @@ import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Client } from "../src/client";
 import { MockTransport } from "./mocks/transport";
 import type { Options } from "../src/types";
+import { timestamp } from "../src/utils";
 
 let mockTransport: MockTransport;
 let defaultOptions: Options;
@@ -97,6 +98,82 @@ describe("_createPayload()", () => {
       { key: "override", value: "new" },
       { key: "local", value: "value2" }
     ]);
+  });
+
+  test("includes telemetry", () => {
+    const client = new Client(defaultOptions);
+    client.addTelemetry("console", {
+      timestamp: timestamp(),
+      severity: "warn",
+      message: "test warning"
+    });
+    client.addTelemetry("network", {
+      type: "fetch",
+      startedOn: timestamp(),
+      method: "PUT",
+      url: "https://example.com/thing"
+    });
+    client.addTelemetry("nav", {
+      on: timestamp(),
+      type: "dunno",
+      from: "location1",
+      to: "location2"
+    });
+    client.addTelemetry("visitor", {
+      timestamp: timestamp(),
+      action: "click",
+      element: {
+        tag: "BUTTON",
+        attributes: {
+          class: "primary"
+        },
+        value: {
+          length: 20,
+          pattern: "alpha"
+        }
+      }
+    })
+    expect(client._createPayload(new Error("oops"), { entry: "direct", metadata: {} })).toMatchObject({
+      console: [
+        {
+          timestamp: expect.any(String),
+          severity: "warn",
+          message: "test warning"
+        }
+      ],
+      nav: [
+        {
+          on: expect.any(String),
+          type: "dunno",
+          from: "location1",
+          to: "location2"
+        }
+      ],
+      network: [
+        {
+          type: "fetch",
+          startedOn: expect.any(String),
+          method: "PUT",
+          url: "https://example.com/thing"
+        }
+      ],
+      visitor: [
+        {
+          timestamp: expect.any(String),
+          action: "click",
+          element: {
+            tag: "BUTTON",
+            attributes: {
+              class: "primary"
+            },
+            value: {
+              length: 20,
+              pattern: "alpha"
+            }
+          }
+        }
+      ]
+    })
   });
 });
 
