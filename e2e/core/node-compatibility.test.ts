@@ -1,6 +1,6 @@
 import { TrackJS } from "@trackjs/core";
 import { test, expect, beforeEach } from "vitest";
-import type { Transport, TransportRequest, TransportResponse, UUID } from "@trackjs/core";
+import type { Transport, TransportRequest, TransportResponse } from "@trackjs/core";
 
 // Mock transport for testing
 class MockTransport implements Transport {
@@ -9,9 +9,7 @@ class MockTransport implements Transport {
   async send(request: TransportRequest): Promise<TransportResponse> {
     this.sentRequests.push(request);
     return {
-      status: 200,
-      headers: {},
-      data: { success: true }
+      status: 200
     };
   }
 
@@ -21,22 +19,22 @@ class MockTransport implements Transport {
 }
 
 beforeEach(() => {
-  TrackJS.uninstall();
+  TrackJS.destroy();
 });
 
 test('TrackJS.install({...}) with minimum options', () => {
   expect(() => {
-    TrackJS.install({
+    TrackJS.initialize({
       token: "test token"
     });
   }).not.toThrow();
-  expect(TrackJS.isInstalled()).toBe(true);
+  expect(TrackJS.isInitialized()).toBe(true);
 });
 
 test('TrackJS.track() can track errors after install', async () => {
   const mockTransport = new MockTransport();
 
-  TrackJS.install({
+  TrackJS.initialize({
     token: 'test token',
     transport: mockTransport
   });
@@ -55,6 +53,34 @@ test('TrackJS.track() can track errors after install', async () => {
   expect(firstRequest.url).toBe('https://capture.trackjs.com/capture/node?token=test%20token&v=core-0.0.0');
   expect(JSON.parse(firstRequest.data as string)).toHaveProperty('message', '"String error"');
 });
+
+test('TrackJS.track() with custom metadata', async () => {
+  const mockTransport = new MockTransport();
+
+  TrackJS.initialize({
+    token: 'test token',
+    transport: mockTransport,
+    metadata: {
+      "foo": "bar"
+    }
+  });
+
+  await TrackJS.track(new Error('Oops'), { metadata: { "bar": "baz" }});
+
+  // Verify requests were sent
+  expect(mockTransport.sentRequests).toHaveLength(1);
+
+  // Verify the structure of a request
+  const request = mockTransport.sentRequests[0] as TransportRequest;
+  const payload = JSON.parse(request.data as string);
+
+  expect(payload).toMatchObject({
+    metadata: [
+      { key: "foo", value: "bar" },
+      { key: "bar", value: "baz" }
+    ]
+  });
+})
 
 
 

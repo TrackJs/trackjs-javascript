@@ -1,15 +1,26 @@
+import { Metadata } from "./metadata";
 import type {
   CapturePayload,
   Options,
   TrackOptions
 } from "./types";
-import { uuid, timestamp, serialize, isError } from "./utils";
+import { timestamp, serialize, isError } from "./utils";
 
 export class Client {
-  private config: Options;
+  private options: Options;
+  private metadata: Metadata;
 
   constructor(options: Options) {
-    this.config = options;
+    this.options = options;
+    this.metadata = new Metadata(this.options.metadata);
+  }
+
+  public addMetadata(metadata: Record<string, string>): void {
+    this.metadata.add(metadata);
+  }
+
+  public removeMetadata(metadata: Record<string, any>): void {
+    this.metadata.remove(metadata);
   }
 
   /**
@@ -32,7 +43,7 @@ export class Client {
   _serialize(thing: any): string {
     return serialize(thing, {
       depth: 3,
-      handlers: this.config.serializer
+      handlers: this.options.serializer
     });
   }
 
@@ -40,6 +51,9 @@ export class Client {
    * Create a complete payload for an error
    */
   _createPayload(error: Error, options: TrackOptions): CapturePayload {
+    const payloadMetadata = this.metadata.clone();
+    payloadMetadata.add(options.metadata);
+
     return {
 
       timestamp: timestamp(),
@@ -51,12 +65,12 @@ export class Client {
       url: '',
 
       customer: {
-        application: this.config.application,
-        correlationId: this.config.correlationId || uuid(),
-        sessionId: this.config.sessionId,
-        token: this.config.token,
-        userId: this.config.userId,
-        version: this.config.version
+        application: this.options.application,
+        correlationId: this.options.correlationId,
+        sessionId: this.options.sessionId,
+        token: this.options.token,
+        userId: this.options.userId,
+        version: this.options.version
       },
 
       environment: {
@@ -71,10 +85,7 @@ export class Client {
         viewportWidth: -1
       },
 
-      metadata: Object.entries({
-        ...this.config.metadata,
-        ...options.metadata,
-      }).map(([key, value]) => ({ key, value })),
+      metadata: payloadMetadata.get(),
 
       console: [],
       nav: [],
@@ -92,9 +103,9 @@ export class Client {
    */
   async _send(payload: CapturePayload): Promise<void> {
     try {
-      await this.config.transport.send({
+      await this.options.transport.send({
         method: 'POST',
-        url: `${this.config.errorURL}?token=${encodeURIComponent(this.config.token)}&v=core-0.0.0`,
+        url: `${this.options.errorURL}?token=${encodeURIComponent(this.options.token)}&v=core-0.0.0`,
         headers: {
           'User-Agent': 'todo something'
         },
