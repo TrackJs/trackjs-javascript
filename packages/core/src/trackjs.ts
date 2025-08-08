@@ -2,7 +2,7 @@ import { FetchTransport } from "./fetchTransport";
 import { Client } from "./client";
 import { uuid } from "./utils";
 
-import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
+import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, Telemetry, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
 
 let config: Options | null = null;
 let client: Client | null = null;
@@ -54,7 +54,8 @@ export function initialize(options: Partial<Options> & { token: string }): void 
  * Keys and values will be truncated to 500 characters.
  *
  * @param metadata - object with string values to be added as metadata.
- * @example How to use addMetadata
+ * @example
+ *
  * ```
  * TrackJS.addMetadata({
  *   'customerStatus': 'paid',
@@ -73,7 +74,8 @@ export function addMetadata(metadata: Record<string, string>): void {
  * Remove keys from metadata.
  *
  * @param metadata - object with string properties to be removed from metadata.
- * @example How to use removeMetadata
+ * @example
+ *
  * ```
  * TrackJS.removeMetadata({
  *   'customerStatus': null,
@@ -88,8 +90,48 @@ export function removeMetadata(metadata: Record<string, any>): void {
   return client!.removeMetadata(metadata);
 }
 
-export function addTelemetry(type: TelemetryType, telemetry: ConsoleTelemetry|NavigationTelemetry|NetworkTelemetry|VisitorTelemetry): void {
-  throw new Error("not implemented");
+/**
+ * Adds an event to the Telemetry Log. The log can store events from Console,
+ * Network, Navigation, or Visitor, designated by the type key provided. TrackJS
+ * will store the last 30 events in the rolling log to be included with any error.
+ *
+ * @param type - The type of Telemetry to be provided
+ * @param telemetry - Any of the supported types. The telemetry object will be
+ * stored by reference, so you can update it after it has been added. This is
+ * particularly useful for network events.
+ *
+ * @example
+ *
+ * ```
+ * TrackJS.addTelemetry("console", {
+ *   timestamp: timestamp(),
+ *   severity: "log",
+ *   message: "My Log Message"
+ * });
+ * ```
+ *
+ * @example
+ *
+ * ```
+ * const networkTelemetry = {
+ *   type: "fetch",
+ *   startedOn: timestamp(),
+ *   method: "POST",
+ *   url: "https://example.com/foo"
+ * };
+ * TrackJS.addTelemetry("network", networkTelemetry);
+ *
+ * // later when fetch completes
+ * networkTelemetry.completedOn = timestamp();
+ * networkTelemetry.statusCode = 200;
+ * networkTelemetry.statusText = "OK";
+ * ```
+ */
+export function addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
+  if (!isInitialized()) {
+    throw new Error("TrackJS must be initialized");
+  }
+  return client!.addTelemetry(type, telemetry);
 }
 
 export function addDependencies(...args: [dependencies: Record<string, string>]): void {
