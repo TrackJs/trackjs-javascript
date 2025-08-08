@@ -1,7 +1,28 @@
-import type { Transport } from "../transport";
 import { SerializeHandler } from "../utils";
-import type { UUID } from "./common";
+import type { HTTPMethods } from "./common";
 import type { CapturePayload } from "./payload";
+
+/**
+ * Transport interface for sending data over the network. Provide a transport that
+ * can send an HTTP request for the current environment.
+ */
+export interface Transport {
+  /**
+   * Send a HTTP Request
+   */
+  send(request: TransportRequest): Promise<TransportResponse>;
+}
+
+export interface TransportRequest {
+  method: HTTPMethods;
+  url: string;
+  headers?: Record<string, string>;
+  data?: string;
+}
+
+export interface TransportResponse {
+  status: number;
+}
 
 export interface TrackOptions {
   /**
@@ -30,7 +51,7 @@ export interface Options {
    *
    * @default uuid()
    */
-  correlationId: UUID;
+  correlationId: string;
 
   /**
    * URL destination override for capturing errors.

@@ -1,5 +1,5 @@
-import { FetchTransport } from "./transport";
-import { Client } from "./Client";
+import { FetchTransport } from "./fetchTransport";
+import { Client } from "./client";
 import { uuid } from "./utils";
 
 import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
@@ -49,12 +49,43 @@ export function initialize(options: Partial<Options> & { token: string }): void 
   client = new Client(config);
 }
 
-export function addMetadata(...args: [metadata: Record<string, string>]): void {
-  throw new Error("not implemented");
+/**
+ * Adds a object set of key-value pairs to metadata for any future errors.
+ * Keys and values will be truncated to 500 characters.
+ *
+ * @param metadata - object with string values to be added as metadata.
+ * @example How to use addMetadata
+ * ```
+ * TrackJS.addMetadata({
+ *   'customerStatus': 'paid',
+ *   'test-112': 'alpha'
+ * });
+ * ```
+ */
+export function addMetadata(metadata: Record<string, string>): void {
+  if (!isInitialized()) {
+    throw new Error("TrackJS must be initialized");
+  }
+  return client!.addMetadata(metadata);
 }
 
-export function removeMetadata(...args: [metadata: Record<string, any>]): void {
-  throw new Error("not implemented");
+/**
+ * Remove keys from metadata.
+ *
+ * @param metadata - object with string properties to be removed from metadata.
+ * @example How to use removeMetadata
+ * ```
+ * TrackJS.removeMetadata({
+ *   'customerStatus': null,
+ *   'test-112': null
+ * });
+ * ```
+ */
+export function removeMetadata(metadata: Record<string, any>): void {
+  if (!isInitialized()) {
+    throw new Error("TrackJS must be initialized");
+  }
+  return client!.removeMetadata(metadata);
 }
 
 export function addTelemetry(type: TelemetryType, telemetry: ConsoleTelemetry|NavigationTelemetry|NetworkTelemetry|VisitorTelemetry): void {
