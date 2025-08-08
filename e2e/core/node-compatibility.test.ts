@@ -1,4 +1,4 @@
-import { TrackJS, timestamp } from "@trackjs/core";
+import { TrackJS } from "@trackjs/core";
 import { test, expect, beforeEach } from "vitest";
 import type { Transport, TransportRequest, TransportResponse } from "@trackjs/core";
 
@@ -82,37 +82,5 @@ test('TrackJS.track() with custom metadata', async () => {
   });
 })
 
-test('TrackJS.addTelemetry(...) sends telemetry', async () => {
-  const mockTransport = new MockTransport();
 
-  TrackJS.initialize({
-    token: 'test token',
-    transport: mockTransport
-  });
-
-  TrackJS.addTelemetry("console", {
-    timestamp: timestamp(),
-    severity: "info",
-    message: "test message"
-  });
-
-  await TrackJS.track(new Error('Oops'));
-
-  // Verify requests were sent
-  expect(mockTransport.sentRequests).toHaveLength(1);
-
-  // Verify the structure of a request
-  const request = mockTransport.sentRequests[0] as TransportRequest;
-  const payload = JSON.parse(request.data as string);
-
-  expect(payload).toMatchObject({
-    console: [
-      {
-        timestamp: expect.any(String),
-        severity: "info",
-        message: "test message"
-      }
-    ]
-  });
-});
 

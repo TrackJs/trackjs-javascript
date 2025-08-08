@@ -1,27 +1,18 @@
 import { Metadata } from "./metadata";
-import { TelemetryLog } from "./telemetry";
 import type {
   CapturePayload,
-  ConsoleTelemetry,
-  NavigationTelemetry,
-  NetworkTelemetry,
   Options,
-  Telemetry,
-  TelemetryType,
-  TrackOptions,
-  VisitorTelemetry
+  TrackOptions
 } from "./types";
 import { timestamp, serialize, isError } from "./utils";
 
 export class Client {
   private options: Options;
   private metadata: Metadata;
-  private telemetry: TelemetryLog;
 
   constructor(options: Options) {
     this.options = options;
     this.metadata = new Metadata(this.options.metadata);
-    this.telemetry = new TelemetryLog();
   }
 
   public addMetadata(metadata: Record<string, string>): void {
@@ -30,10 +21,6 @@ export class Client {
 
   public removeMetadata(metadata: Record<string, any>): void {
     this.metadata.remove(metadata);
-  }
-
-  public addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
-    this.telemetry.add(type, telemetry);
   }
 
   /**
@@ -100,10 +87,10 @@ export class Client {
 
       metadata: payloadMetadata.get(),
 
-      console: this.telemetry.get("console") as Array<ConsoleTelemetry>,
-      nav: this.telemetry.get("nav") as Array<NavigationTelemetry>,
-      network: this.telemetry.get("network") as Array<NetworkTelemetry>,
-      visitor: this.telemetry.get("visitor") as Array<VisitorTelemetry>,
+      console: [],
+      nav: [],
+      network: [],
+      visitor: [],
 
       agentPlatform: "",
       version: '0.0.0',
