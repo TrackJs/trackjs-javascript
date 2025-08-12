@@ -26,10 +26,30 @@ export interface SerializeOptions {
   handlers?: SerializeHandler[];
 }
 
+const defaultOptions: Required<SerializeOptions> = {
+  depth: 3,
+  handlers: []
+}
+
+let globalOptions: Required<SerializeOptions> = defaultOptions;
+
+export function configureSerializer(options: SerializeOptions): void {
+  globalOptions = {
+    ...defaultOptions,
+    ...options
+  };
+}
+
+/**
+ * Restores the serializer to its default configuration. Mainly used for testing
+ */
+export function restoreSerializer(): void {
+  globalOptions = defaultOptions;
+}
+
 export function serialize(thing: any, options?: SerializeOptions): string {
   const opts: Required<SerializeOptions> = {
-    depth: 3,
-    handlers: [],
+    ...globalOptions,
     ...options
   };
 

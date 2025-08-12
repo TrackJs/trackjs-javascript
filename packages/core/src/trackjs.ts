@@ -1,6 +1,6 @@
 import { FetchTransport } from "./fetchTransport";
 import { Client } from "./client";
-import { uuid } from "./utils";
+import { uuid, configureSerializer } from "./utils";
 
 import type { CapturePayload, ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Options, Telemetry, TelemetryType, TrackOptions, VisitorTelemetry } from "./types";
 
@@ -45,6 +45,11 @@ export function initialize(options: Partial<Options> & { token: string }): void 
     ...defaultOptions,
     ...options
   };
+
+  configureSerializer({
+    depth: 3,
+    handlers: config.serializer
+  });
 
   client = new Client(config);
 }

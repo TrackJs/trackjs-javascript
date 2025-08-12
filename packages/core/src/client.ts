@@ -46,18 +46,11 @@ export class Client {
       ...options
     };
 
-    const safeError = isError(error) ? error as Error : new Error(this._serialize(error))
+    const safeError = isError(error) ? error as Error : new Error(serialize(error))
 
     const payload = this._createPayload(safeError, safeOptions);
 
     await this._send(payload);
-  }
-
-  _serialize(thing: any): string {
-    return serialize(thing, {
-      depth: 3,
-      handlers: this.options.serializer
-    });
   }
 
   /**

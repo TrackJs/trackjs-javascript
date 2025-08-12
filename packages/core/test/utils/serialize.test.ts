@@ -1,5 +1,9 @@
-import { describe, expect, test } from 'vitest';
-import { serialize } from '../../src/utils/serialize';
+import { describe, expect, test, afterEach } from 'vitest';
+import { serialize, configureSerializer, restoreSerializer } from '../../src/utils/serialize';
+
+afterEach(() => {
+  restoreSerializer();
+})
 
 test.each([
   ["", '""'],
@@ -208,6 +212,23 @@ describe('serializing with custom handlers', () => {
       serialize: (thing: any) => "handler1"
     };
     expect(serialize(42, { handlers: [handler1] })).toBe("42");
+  });
+
+  test('uses configured depth', () => {
+    configureSerializer({ depth: 1 });
+    expect(serialize({"first-level":{"second-level":"test"}})).toBe('{"first-level":{Object}}');
+  });
+
+  test('uses configured handlers', () => {
+    configureSerializer({
+      handlers: [
+        {
+          test: (thing: any) => true,
+          serialize: (thing: any) => "handler1"
+        }
+      ]
+    });
+    expect(serialize("anything at all")).toBe('handler1');
   })
 
 });
