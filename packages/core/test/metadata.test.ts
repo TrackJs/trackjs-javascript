@@ -38,15 +38,15 @@ test("add() with non-string values", () => {
 
 test("add() truncates keys and values that exceed maximum length", () => {
   const m = new Metadata();
-  const longKey = "k".repeat(500);
-  const longValue = "v".repeat(500);
+  const longKey = "k".repeat(1000);
+  const longValue = "v".repeat(1000);
 
   m.add({
     [longKey]: longValue
   });
 
   expect(m.get()).toEqual([
-    { key: `${"k".repeat(490)}…{10}`, value: `${"v".repeat(490)}…{10}` }
+    { key: `${"k".repeat(494)}…{500}`, value: `${"v".repeat(494)}…{500}` }
   ]);
 });
 
