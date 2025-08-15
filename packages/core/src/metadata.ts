@@ -1,8 +1,6 @@
 import { truncate } from "./utils";
 
-// The max length that the server will accept is 500. We pad this down by 10 so
-// that there is room for the …{9999} to know the true length.
-const MAX_METADATA_LENGTH = 490;
+const MAX_METADATA_LENGTH = 500;
 
 export class Metadata {
 

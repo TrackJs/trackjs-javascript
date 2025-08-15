@@ -1,10 +1,18 @@
 import { expect, test } from "vitest";
-import { truncate } from "../../src/utils/truncate";
+import { truncate } from "../../src/utils";
 
-test("returns strings shorter then length unchanged", () => {
-  expect(truncate("a normal string", 15)).toBe("a normal string");
+test("throws when non-string is provided", () => {
+  expect(() => truncate(false as unknown as string, 1)).toThrow("Value must be a string");
+  expect(() => truncate({} as unknown as string, 1)).toThrow("Value must be a string");
+  expect(() => truncate(12345 as unknown as string, 1)).toThrow("Value must be a string");
 });
 
-test("appends ellipsis and length to long string", () => {
-  expect(truncate("a too long string", 5)).toBe("a too…{12}");
+test("returns string shorter than length", () => {
+  expect(truncate("1234567890", 10)).toBe("1234567890");
+  expect(truncate("a".repeat(1000), 1000)).toBe("a".repeat(1000));
+});
+
+test("returns truncated string longer than length", () => {
+  expect(truncate("1234567890", 8)).toBe("1234567…");
+  expect(truncate("a".repeat(1000), 100)).toBe(`${"a".repeat(99)}…`);
 });

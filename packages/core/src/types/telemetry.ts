@@ -1,8 +1,10 @@
 import type { HTTPMethods, ISO8601Date, SeverityLevel } from "./common";
 
-export type TelemetryType = "console" | "network" | "navigation" | "visitor";
+export type TelemetryType = "con" | "net" | "nav" | "vis";
 
-export interface ConsoleTelemetry {
+export interface Telemetry {}
+
+export interface ConsoleTelemetry extends Telemetry {
   /**
    * Timestamp of the log event
    */
@@ -19,7 +21,7 @@ export interface ConsoleTelemetry {
   message: string;
 }
 
-export interface NavigationTelemetry {
+export interface NavigationTelemetry extends Telemetry {
   /**
    * Timestamp the navigation happened.
    */
@@ -41,7 +43,7 @@ export interface NavigationTelemetry {
   to: string;
 }
 
-export interface NetworkTelemetry {
+export interface NetworkTelemetry extends Telemetry {
   /**
    * Timestamp the request started
    */
@@ -78,7 +80,7 @@ export interface NetworkTelemetry {
   type: string;
 }
 
-export interface VisitorTelemetry {
+export interface VisitorTelemetry extends Telemetry {
   /**
    * Timestamp the event occurred
    */

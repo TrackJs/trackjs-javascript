@@ -1,18 +1,24 @@
 import { Metadata } from "./metadata";
+import { TelemetryLog } from "./telemetryLog";
+import { timestamp, serialize, isError } from "./utils";
+
 import type {
   CapturePayload,
   Options,
+  Telemetry,
+  TelemetryType,
   TrackOptions
 } from "./types";
-import { timestamp, serialize, isError } from "./utils";
 
 export class Client {
   private options: Options;
   private metadata: Metadata;
+  private telemetry: TelemetryLog;
 
   constructor(options: Options) {
     this.options = options;
     this.metadata = new Metadata(this.options.metadata);
+    this.telemetry = new TelemetryLog();
   }
 
   public addMetadata(metadata: Record<string, string>): void {
@@ -23,9 +29,10 @@ export class Client {
     this.metadata.remove(metadata);
   }
 
-  /**
-   * Track an error and send it to TrackJS
-   */
+  public addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
+    this.telemetry.add(type, telemetry);
+  }
+
   public async track(error: Error | object | string, options?: Partial<TrackOptions>): Promise<void> {
     const safeOptions: TrackOptions = {
       entry: "direct",
@@ -33,18 +40,11 @@ export class Client {
       ...options
     };
 
-    const safeError = isError(error) ? error as Error : new Error(this._serialize(error))
+    const safeError = isError(error) ? error as Error : new Error(serialize(error))
 
     const payload = this._createPayload(safeError, safeOptions);
 
     await this._send(payload);
-  }
-
-  _serialize(thing: any): string {
-    return serialize(thing, {
-      depth: 3,
-      handlers: this.options.serializer
-    });
   }
 
   /**
@@ -87,10 +87,10 @@ export class Client {
 
       metadata: payloadMetadata.get(),
 
-      console: [],
-      nav: [],
-      network: [],
-      visitor: [],
+      console: this.telemetry.get("con"),
+      nav: this.telemetry.get("nav"),
+      network: this.telemetry.get("net"),
+      visitor: this.telemetry.get("vis"),
 
       agentPlatform: "",
       version: '0.0.0',
