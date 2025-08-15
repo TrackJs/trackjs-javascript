@@ -1,17 +1,14 @@
 import { Metadata } from "./metadata";
-import { TelemetryLog } from "./telemetry";
+import { TelemetryLog } from "./telemetryLog";
+import { timestamp, serialize, isError } from "./utils";
+
 import type {
   CapturePayload,
-  ConsoleTelemetry,
-  NavigationTelemetry,
-  NetworkTelemetry,
   Options,
   Telemetry,
   TelemetryType,
-  TrackOptions,
-  VisitorTelemetry
+  TrackOptions
 } from "./types";
-import { timestamp, serialize, isError } from "./utils";
 
 export class Client {
   private options: Options;
@@ -36,9 +33,6 @@ export class Client {
     this.telemetry.add(type, telemetry);
   }
 
-  /**
-   * Track an error and send it to TrackJS
-   */
   public async track(error: Error | object | string, options?: Partial<TrackOptions>): Promise<void> {
     const safeOptions: TrackOptions = {
       entry: "direct",
@@ -93,10 +87,10 @@ export class Client {
 
       metadata: payloadMetadata.get(),
 
-      console: this.telemetry.get("console") as Array<ConsoleTelemetry>,
-      nav: this.telemetry.get("nav") as Array<NavigationTelemetry>,
-      network: this.telemetry.get("network") as Array<NetworkTelemetry>,
-      visitor: this.telemetry.get("visitor") as Array<VisitorTelemetry>,
+      console: this.telemetry.get("con"),
+      nav: this.telemetry.get("nav"),
+      network: this.telemetry.get("net"),
+      visitor: this.telemetry.get("vis"),
 
       agentPlatform: "",
       version: '0.0.0',

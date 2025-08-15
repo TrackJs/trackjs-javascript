@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Client } from "../src/client";
+import { timestamp } from "../src/utils";
 import { MockTransport } from "./mocks/transport";
 import type { Options } from "../src/types";
-import { timestamp } from "../src/utils";
 
 let mockTransport: MockTransport;
 let defaultOptions: Options;
@@ -102,12 +102,12 @@ describe("_createPayload()", () => {
 
   test("includes telemetry", () => {
     const client = new Client(defaultOptions);
-    client.addTelemetry("console", {
+    client.addTelemetry("con", {
       timestamp: timestamp(),
       severity: "warn",
       message: "test warning"
     });
-    client.addTelemetry("network", {
+    client.addTelemetry("net", {
       type: "fetch",
       startedOn: timestamp(),
       method: "PUT",
@@ -119,7 +119,7 @@ describe("_createPayload()", () => {
       from: "location1",
       to: "location2"
     });
-    client.addTelemetry("visitor", {
+    client.addTelemetry("vis", {
       timestamp: timestamp(),
       action: "click",
       element: {

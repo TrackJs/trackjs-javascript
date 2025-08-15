@@ -1,5 +1,10 @@
 import type { ISO8601Date } from "./common";
-import type { ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, VisitorTelemetry } from "./telemetry";
+import type {
+  ConsoleTelemetry,
+  NavigationTelemetry,
+  NetworkTelemetry,
+  VisitorTelemetry
+} from "./telemetry";
 
 /**
  * Payload of an error sent to TrackJS.
