@@ -1,6 +1,5 @@
+import { MAX_METADATA_LENGTH } from "./constants";
 import { truncate } from "./utils";
-
-const MAX_METADATA_LENGTH = 500;
 
 export class Metadata {
 
@@ -30,9 +29,7 @@ export class Metadata {
 
   public clone(): Metadata {
     const cloned = new Metadata();
-    for (const [key, value] of this.store.entries()) {
-      cloned.store.set(key, value);
-    }
+    cloned.store = structuredClone(this.store);
     return cloned;
   }
 

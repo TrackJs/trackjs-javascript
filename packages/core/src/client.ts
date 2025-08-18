@@ -1,7 +1,6 @@
 import { Metadata } from "./metadata";
 import { TelemetryLog } from "./telemetryLog";
 import { timestamp, serialize, isError } from "./utils";
-
 import type {
   CapturePayload,
   Options,
@@ -75,14 +74,12 @@ export class Client {
 
       environment: {
         age: 0,
-        dependencies: {
-          "foo": "bar"
-        },
-        originalUrl: "",
-        referrer: "",
-        userAgent: 'node/22.0 (osx x64 123)',
-        viewportHeight: -1,
-        viewportWidth: -1
+        dependencies: structuredClone(this.options.dependencies),
+        originalUrl: this.options.originalUrl,
+        referrer: this.options.referrerUrl,
+        userAgent: this.options.userAgent,
+        viewportHeight: this.options.viewportHeight,
+        viewportWidth: this.options.viewportWidth
       },
 
       metadata: payloadMetadata.get(),
@@ -92,8 +89,8 @@ export class Client {
       network: this.telemetry.get("net"),
       visitor: this.telemetry.get("vis"),
 
-      agentPlatform: "",
-      version: '0.0.0',
+      agentPlatform: this.options.agent,
+      version: this.options.agentVersion,
       throttled: 0,
     };
   }
