@@ -23,4 +23,12 @@ export class MockTransport implements Transport {
     this.sentRequests = [];
     this.shouldFail = false;
   }
-}
+
+  getRequestData(index: number) : any {
+    if (!this.sentRequests[index]) {
+      return undefined;
+    }
+
+    return JSON.parse(this.sentRequests[index].data as string);
+  }
+ }

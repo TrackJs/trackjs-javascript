@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "dev": "vitest"
   },
   "dependencies": {
     "@trackjs/core": "file:../../packages/core"

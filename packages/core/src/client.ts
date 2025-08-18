@@ -3,6 +3,8 @@ import { TelemetryLog } from "./telemetryLog";
 import { timestamp, serialize, isError } from "./utils";
 import type {
   CapturePayload,
+  ErrorHandler,
+  TelemetryHandler,
   Options,
   Telemetry,
   TelemetryType,
@@ -13,11 +15,15 @@ export class Client {
   private options: Options;
   private metadata: Metadata;
   private telemetry: TelemetryLog;
+  private errorHandlers: Set<ErrorHandler>;
+  private telemetryHandlers: Set<TelemetryHandler>;
 
   constructor(options: Options) {
     this.options = options;
     this.metadata = new Metadata(this.options.metadata);
     this.telemetry = new TelemetryLog();
+    this.errorHandlers = new Set(!!options.onError ? [options.onError] : undefined);
+    this.telemetryHandlers = new Set();
   }
 
   public addMetadata(metadata: Record<string, string>): void {
@@ -29,10 +35,25 @@ export class Client {
   }
 
   public addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
-    this.telemetry.add(type, telemetry);
+    let prevented = false;
+    for(const handler of this.telemetryHandlers) {
+      prevented = prevented || !handler(type, telemetry);
+    }
+
+    if (!prevented) {
+      this.telemetry.add(type, telemetry);
+    }
   }
 
-  public async track(error: Error | object | string, options?: Partial<TrackOptions>): Promise<void> {
+  public onError(handler: ErrorHandler) : void {
+    this.errorHandlers.add(handler);
+  }
+
+  public onTelemetry(handler: TelemetryHandler) : void {
+    this.telemetryHandlers.add(handler);
+  }
+
+  public async track(error: Error | object | string, options?: Partial<TrackOptions>): Promise<boolean> {
     const safeOptions: TrackOptions = {
       entry: "direct",
       metadata: {},
@@ -40,10 +61,18 @@ export class Client {
     };
 
     const safeError = isError(error) ? error as Error : new Error(serialize(error))
-
     const payload = this._createPayload(safeError, safeOptions);
 
-    await this._send(payload);
+    let prevented = false;
+    for(const handler of this.errorHandlers) {
+      prevented = prevented || !handler(payload);
+    }
+
+    if (!prevented) {
+      await this._send(payload);
+    }
+
+    return !prevented;
   }
 
   /**
