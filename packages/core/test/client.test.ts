@@ -10,17 +10,27 @@ let defaultOptions: Options;
 beforeEach(() => {
   mockTransport = new MockTransport();
   defaultOptions = {
+    agent: "test",
+    agentVersion: "1.2.3",
     application: 'test-app',
     correlationId: 'test-correlation-id',
+    dependencies: {
+      "foo": "1.2.3"
+    },
     errorURL: 'https://test.trackjs.com/capture',
     metadata: {},
     onError: () => true,
+    originalUrl: "original-url",
+    referrerUrl: "referrer-url",
     serializer: [],
     sessionId: 'test-session',
     token: 'test-token',
     transport: mockTransport,
+    userAgent: "test-agent",
     userId: 'test-user',
-    version: '0.0.0'
+    version: '0.0.0',
+    viewportHeight: 100,
+    viewportWidth: 200
   };
 });
 
@@ -54,13 +64,13 @@ describe("_createPayload()", () => {
       environment: {
         age: 0,
         dependencies: {
-          "foo": "bar"
+          "foo": "1.2.3"
         },
-        originalUrl: "",
-        referrer: "",
-        userAgent: 'node/22.0 (osx x64 123)',
-        viewportHeight: -1,
-        viewportWidth: -1
+        originalUrl: "original-url",
+        referrer: "referrer-url",
+        userAgent: "test-agent",
+        viewportHeight: 100,
+        viewportWidth: 200,
       },
 
       metadata: [],
@@ -69,8 +79,8 @@ describe("_createPayload()", () => {
       network: [],
       visitor: [],
 
-      agentPlatform: "",
-      version: '0.0.0',
+      agentPlatform: "test",
+      version: "1.2.3",
       throttled: 0
     });
   });

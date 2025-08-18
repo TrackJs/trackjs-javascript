@@ -1,11 +1,21 @@
-import type { ConsoleTelemetry, NavigationTelemetry, NetworkTelemetry, Telemetry, TelemetryType, VisitorTelemetry } from "./types";
 import { truncate } from "./utils";
+import {
+  MAX_TELEMETRY_ATTRIBUTE_VALUE,
+  MAX_TELEMETRY_ATTRIBUTES,
+  MAX_TELEMETRY_LOG_SIZE,
+  MAX_TELEMETRY_MESSAGE_LENGTH,
+  MAX_TELEMETRY_URI_LENGTH
+} from "./constants";
 
-const MAX_LOG_SIZE = 30;
-const MAX_MESSAGE_LENGTH = 10_000;
-const MAX_URI_LENGTH = 1_000;
-const MAX_ATTRIBUTES = 20;
-const MAX_ATTRIBUTE_VALUE = 500;
+import type {
+  ConsoleTelemetry,
+  NavigationTelemetry,
+  NetworkTelemetry,
+  Telemetry,
+  TelemetryType,
+  VisitorTelemetry
+} from "./types";
+
 
 export class TelemetryLog {
 
@@ -36,8 +46,8 @@ export class TelemetryLog {
     }
     this.store.push({ type, telemetry});
 
-    if (this.store.length > MAX_LOG_SIZE) {
-      this.store = this.store.slice(this.store.length - MAX_LOG_SIZE);
+    if (this.store.length > MAX_TELEMETRY_LOG_SIZE) {
+      this.store = this.store.slice(this.store.length - MAX_TELEMETRY_LOG_SIZE);
     }
   }
 
@@ -47,7 +57,7 @@ export class TelemetryLog {
 
   public clone(): TelemetryLog {
     const cloned = new TelemetryLog();
-    cloned.store = this.store.slice(0);
+    cloned.store = structuredClone(this.store);
     return cloned;
   }
 
@@ -64,18 +74,18 @@ export class TelemetryLog {
 }
 
 export function _normalizeConsoleTelemetry(telemetry: any) : ConsoleTelemetry {
-  telemetry.message = truncate(telemetry.message, MAX_MESSAGE_LENGTH);
+  telemetry.message = truncate(telemetry.message, MAX_TELEMETRY_MESSAGE_LENGTH);
   return telemetry;
 }
 
 export function _normalizeNavigationTelemetry(telemetry: any) : NavigationTelemetry {
-  telemetry.from = truncate(telemetry.from, MAX_URI_LENGTH);
-  telemetry.to = truncate(telemetry.to, MAX_URI_LENGTH);
+  telemetry.from = truncate(telemetry.from, MAX_TELEMETRY_URI_LENGTH);
+  telemetry.to = truncate(telemetry.to, MAX_TELEMETRY_URI_LENGTH);
   return telemetry;
 }
 
 export function _normalizeNetworkTelemetry(telemetry: any) : NetworkTelemetry {
-  telemetry.url = truncate(telemetry.url, MAX_URI_LENGTH);
+  telemetry.url = truncate(telemetry.url, MAX_TELEMETRY_URI_LENGTH);
   return telemetry;
 }
 
@@ -84,10 +94,10 @@ export function _normalizeVisitorTelemetry(telemetry: any) : VisitorTelemetry {
   const currentAttributes: attributes = telemetry.element?.attributes || {};
   let normalizedAttributes: attributes = {};
 
-  const limitedAttributes = Object.entries(currentAttributes).slice(0, MAX_ATTRIBUTES);
+  const limitedAttributes = Object.entries(currentAttributes).slice(0, MAX_TELEMETRY_ATTRIBUTES);
 
   for (const [key, value] of limitedAttributes) {
-    normalizedAttributes[key] = truncate(value, MAX_ATTRIBUTE_VALUE);
+    normalizedAttributes[key] = truncate(value, MAX_TELEMETRY_ATTRIBUTE_VALUE);
   }
 
   (telemetry.element || {}).attributes = normalizedAttributes;

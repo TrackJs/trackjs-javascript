@@ -18,17 +18,25 @@ let config: Options | null = null;
 let client: Client | null = null;
 
 const defaultOptions: Options = {
-  application: '',
+  agent: "core",
+  agentVersion: "{{AGENT_VERSION}}",
+  application: "",
+  dependencies: {},
   correlationId: uuid(),
-  errorURL: 'https://capture.trackjs.com/capture/node',
+  errorURL: "https://capture.trackjs.com/capture/node",
   metadata: {},
   onError: () => true,
+  originalUrl: "",
+  referrerUrl: "",
   serializer: [],
-  sessionId: '',
-  token: '',
+  sessionId: "",
+  token: "",
   transport: new FetchTransport(),
-  userId: '',
-  version: ''
+  userAgent: "",
+  userId: "",
+  version: "",
+  viewportHeight: -1,
+  viewportWidth: -1
 };
 
 /**
@@ -74,7 +82,7 @@ export function initialize(options: Partial<Options> & { token: string }): void 
 }
 
 /**
- * Adds a object set of key-value pairs to metadata for any future errors.
+ * Adds a object map of key-value pairs to metadata for any future errors.
  * Keys and values will be truncated to 500 characters.
  *
  * @param metadata - object with string values to be added as metadata.
@@ -161,10 +169,6 @@ export function addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
   _checkRequired("Telemetry", telemetry);
 
   return client!.addTelemetry(type, telemetry);
-}
-
-export function addDependencies(...args: [dependencies: Record<string, string>]): void {
-  throw new Error("not implemented");
 }
 
 /**

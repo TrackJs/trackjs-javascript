@@ -1,4 +1,4 @@
-import { TrackJS, timestamp } from "@trackjs/core";
+import { TrackJS, timestamp, userAgent } from "@trackjs/core";
 import { test, expect, beforeEach } from "vitest";
 import { MockTransport } from "./mocks/transport";
 import type { NetworkTelemetry, Transport, TransportRequest, TransportResponse } from "@trackjs/core";
@@ -48,6 +48,35 @@ test('TrackJS.track() can track errors after install', async () => {
     stack: expect.any(String)
   });
 });
+
+test('TrackJS.track() with environment', async () => {
+  const transport = new MockTransport();
+
+  TrackJS.initialize({
+    token: 'test token',
+    transport,
+    dependencies: {
+      "foo": "1.2.3"
+    },
+    originalUrl: "original-url",
+    referrerUrl: "referrer-url",
+    userAgent: userAgent("Node", "12.1", "windows", "x64", "11.2"),
+  });
+
+  await TrackJS.track(new Error('Oops'));
+
+  expect(transport.sentRequests).toHaveLength(1);
+  expect(JSON.parse(transport.sentRequests[0]?.data as string)).toMatchObject({
+    environment: expect.objectContaining({
+      originalUrl: "original-url",
+      referrer: "referrer-url",
+      dependencies: {
+        "foo": "1.2.3"
+      },
+      userAgent: "Node/12.1 (windows x64 11.2)"
+    })
+  });
+})
 
 test('TrackJS.track() with custom metadata', async () => {
   const transport = new MockTransport();
