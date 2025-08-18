@@ -1,104 +1,134 @@
 import { TrackJS, timestamp, userAgent } from "@trackjs/core";
-import { test, expect, beforeEach } from "vitest";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { MockTransport } from "./mocks/transport";
 import type { NetworkTelemetry, Transport, TransportRequest, TransportResponse } from "@trackjs/core";
 
+let transport: MockTransport;
+
 beforeEach(() => {
   TrackJS.destroy();
+  transport = new MockTransport();
 });
 
-test('TrackJS.install({...}) with minimum options', () => {
-  TrackJS.initialize({
-    token: "test-token",
-  });
-  expect(TrackJS.isInitialized()).toBe(true);
-});
+describe("TrackJS.install({...}", () => {
 
-test('TrackJS.track() can track errors after install', async () => {
-  const transport = new MockTransport();
-
-  TrackJS.initialize({
-    token: 'test-token',
-    transport
+  test('with minimum options', () => {
+    TrackJS.initialize({
+      token: "test-token",
+    });
+    expect(TrackJS.isInitialized()).toBe(true);
   });
 
-  // Track different error types
-  await TrackJS.track('String error');
-  await TrackJS.track(new Error('Error'));
-  await TrackJS.track({ custom: 'object' });
+  test('with initial metadata', async () => {
+    TrackJS.initialize({
+      token: "test-token",
+      metadata: {
+        "foo": "bar"
+      },
+      transport
+    });
 
-  // Verify requests were sent
-  expect(transport.sentRequests).toHaveLength(3);
-
-  // Verify the structure of a request
-  const firstRequest = transport.sentRequests[0] as TransportRequest;
-  expect(firstRequest.method).toBe('POST');
-  expect(firstRequest.url).toBe('https://capture.trackjs.com/capture/node?token=test-token&v=core-0.0.0');
-
-  expect(JSON.parse(firstRequest.data as string)).toMatchObject({
-    message: '"String error"',
-    stack: expect.any(String)
-  });
-  expect(JSON.parse(transport.sentRequests[1]?.data as string)).toMatchObject({
-    message: 'Error',
-    stack: expect.any(String)
-  });
-  expect(JSON.parse(transport.sentRequests[2]?.data as string)).toMatchObject({
-    message: '{"custom":"object"}',
-    stack: expect.any(String)
-  });
-});
-
-test('TrackJS.track() with environment', async () => {
-  const transport = new MockTransport();
-
-  TrackJS.initialize({
-    token: 'test token',
-    transport,
-    dependencies: {
-      "foo": "1.2.3"
-    },
-    originalUrl: "original-url",
-    referrerUrl: "referrer-url",
-    userAgent: userAgent("Node", "12.1", "windows", "x64", "11.2"),
+    await TrackJS.track("test");
+    expect(transport.sentRequests).toHaveLength(1);
+    expect(transport.getRequestData(0)).toMatchObject({
+      customer: expect.objectContaining({
+        token: "test-token"
+      }),
+      metadata: [
+        { key: "foo", value: "bar" }
+      ]
+    })
   });
 
-  await TrackJS.track(new Error('Oops'));
+  test('with onError Handler', async () => {
+    const handler = vi.fn().mockImplementation(() => false);
 
-  expect(transport.sentRequests).toHaveLength(1);
-  expect(JSON.parse(transport.sentRequests[0]?.data as string)).toMatchObject({
-    environment: expect.objectContaining({
-      originalUrl: "original-url",
-      referrer: "referrer-url",
+    TrackJS.initialize({
+      token: "test-token",
+      transport,
+      onError: handler
+    });
+
+    await TrackJS.track("test222");
+
+    expect(handler).toHaveBeenCalled();
+    console.log(transport.sentRequests);
+    expect(transport.sentRequests).toHaveLength(0);
+  });
+
+  test('with environment info', async () => {
+    TrackJS.initialize({
+      token: 'test token',
+      transport,
       dependencies: {
         "foo": "1.2.3"
       },
-      userAgent: "Node/12.1 (windows x64 11.2)"
-    })
+      originalUrl: "original-url",
+      referrerUrl: "referrer-url",
+      userAgent: userAgent("Node", "12.1", "windows", "x64", "11.2"),
+    });
+
+    await TrackJS.track(new Error('test'));
+
+    expect(transport.sentRequests).toHaveLength(1);
+    expect(JSON.parse(transport.sentRequests[0]?.data as string)).toMatchObject({
+      environment: expect.objectContaining({
+        originalUrl: "original-url",
+        referrer: "referrer-url",
+        dependencies: {
+          "foo": "1.2.3"
+        },
+        userAgent: "Node/12.1 (windows x64 11.2)"
+      }),
+    });
+  })
+
+});
+
+describe("TrackJS.track(...)", () => {
+
+  test('can track errors after install', async () => {
+    TrackJS.initialize({
+      token: 'test-token',
+      transport
+    });
+
+    await TrackJS.track('String error');
+    await TrackJS.track(new Error('Error'));
+    await TrackJS.track({ custom: 'object' });
+
+    expect(transport.sentRequests).toHaveLength(3);
+    expect(transport.getRequestData(0)).toMatchObject({
+      message: '"String error"',
+      stack: expect.any(String)
+    });
+    expect(transport.getRequestData(1)).toMatchObject({
+      message: 'Error',
+      stack: expect.any(String)
+    });
+    expect(transport.getRequestData(2)).toMatchObject({
+      message: '{"custom":"object"}',
+      stack: expect.any(String)
+    });
   });
-})
 
-test('TrackJS.track() with custom metadata', async () => {
-  const transport = new MockTransport();
+  test('TrackJS.track() with custom metadata', async () => {
+    TrackJS.initialize({
+      token: 'test token',
+      transport
+    });
 
-  TrackJS.initialize({
-    token: 'test token',
-    transport,
-    metadata: {
-      "foo": "bar"
-    }
-  });
+    await TrackJS.track(new Error('Oops'), { metadata: { "bar": "baz" }});
 
-  await TrackJS.track(new Error('Oops'), { metadata: { "bar": "baz" }});
+    expect(transport.sentRequests).toHaveLength(1);
+    expect(transport.getRequestData(0)).toMatchObject({
+      metadata: [
+        { key: "bar", value: "baz" }
+      ]
+    });
+  })
 
-  expect(transport.sentRequests).toHaveLength(1);
-  expect(JSON.parse(transport.sentRequests[0]?.data as string)).toMatchObject({
-    metadata: [
-      { key: "foo", value: "bar" },
-      { key: "bar", value: "baz" }
-    ]
-  });
-})
+});
 
 test('TrackJS.addTelemetry(...) sends telemetry', async () => {
   const transport = new MockTransport();
@@ -151,4 +181,3 @@ test('TrackJS.addTelemetry(...) sends telemetry', async () => {
     ]
   });
 });
-

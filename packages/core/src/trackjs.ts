@@ -3,7 +3,6 @@ import { Client } from "./client";
 import { uuid, configureSerializer } from "./utils";
 
 import type {
-  CapturePayload,
   Options,
   TrackOptions,
   ConsoleTelemetry,
@@ -11,7 +10,9 @@ import type {
   NetworkTelemetry,
   Telemetry,
   TelemetryType,
-  VisitorTelemetry
+  VisitorTelemetry,
+  ErrorHandler,
+  TelemetryHandler
 } from "./types";
 
 let config: Options | null = null;
@@ -25,7 +26,6 @@ const defaultOptions: Options = {
   correlationId: uuid(),
   errorURL: "https://capture.trackjs.com/capture/node",
   metadata: {},
-  onError: () => true,
   originalUrl: "",
   referrerUrl: "",
   serializer: [],
@@ -172,6 +172,49 @@ export function addTelemetry(type: TelemetryType, telemetry: Telemetry): void {
 }
 
 /**
+ * Adds a custom event handler for errors. Error Event handlers are passed a
+ * reference to the {@link CapturePayload} to be inspected or modified. Returning
+ * `false` will prevent the error from being sent.
+ *
+ * @param handler - {@link ErrorHandler} function to process or prevent the error.
+ * @example
+ * ```
+ * TrackJS.onError((payload) => {
+ *   return payload.entry === "network"; // prevent network errors.
+ * });
+ * ```
+ */
+export function onError(handler: ErrorHandler) : void {
+  _checkInitialized();
+  _checkRequired("Handler", handler);
+
+  return client!.onError(handler);
+}
+
+/**
+ * Adds a custom event handler for telemetry. Telemetry Event handlers are passed a
+ * reference to the type and {@link Telemetry} to be inspected or modified. Returning
+ * `false` will prevent the telemetry from being recorded.
+ *
+ * @param handler - {@link TelemetryHandler} function to process or prevent the telemetry.
+ * @example
+ * ```
+ * TrackJS.onTelemetry((type, telemetry) => {
+ *   if (type === "net") {
+ *     telemetry.url = telemetry.url.replace("stage.", ""); // remove staging subdomain
+ *   }
+ *   return true;
+ * });
+ * ```
+ */
+export function onTelemetry(handler: TelemetryHandler) : void {
+  _checkInitialized();
+  _checkRequired("Handler", handler);
+
+  return client!.onTelemetry(handler);
+}
+
+/**
  * Track and error or error-like object to the TrackJS error monitoring service.
  *
  * @param error - Error or error-like object. If a non-error is provided, it will
@@ -191,21 +234,12 @@ export async function track(error: Error|object|string, options?: Partial<TrackO
   _checkInitialized();
   _checkRequired("Error", error);
 
-  await client!.track(error, options);
-  return true;
+  return await client!.track(error, options);
 }
 
 export function usage(): void {
   throw new Error("not implemented");
 }
-
-export function onError(callback: (payload: CapturePayload) => boolean) : void {
-  throw new Error("not implemented");
-}
-
-// export function onTelemetry(callback: (type: TelemetryType, telemetry: ConsoleTelemetry|NavigationTelemetry|NetworkTelemetry|VisitorTelemetry) => boolean) : void {
-//   throw new Error("not implemented");
-// }
 
 /**
  * Removes the TrackJS initialization and options.

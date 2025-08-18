@@ -1,6 +1,7 @@
-import { SerializeHandler } from "../utils";
+import type { SerializeHandler } from "../utils";
 import type { HTTPMethods } from "./common";
 import type { CapturePayload } from "./payload";
+import type { Telemetry, TelemetryType } from "./telemetry";
 
 /**
  * Transport interface for sending data over the network. Provide a transport that
@@ -23,6 +24,27 @@ export interface TransportRequest {
 export interface TransportResponse {
   status: number;
 }
+
+/**
+ * Error event handler function for processing or preventing an error event that
+ * is about to be tracked by the agent.
+ *
+ * @param payload - Reference to the full error capture payload that will be sent.
+ * You can modify the contents of the payload to add or remove data.
+ * @returns False if the error should be prevented from sending.
+ */
+export type ErrorHandler = (payload: CapturePayload) => boolean;
+
+/**
+ * Telemetry event handler function for processing or preventing telemetry
+ * events from being added to the log.
+ *
+ * @param type - Type of Telemetry entry to be added
+ * @param telemetry - Reference to the telemetry object to be added. You can
+ * modify the contents of the telemetry to add or remove data.
+ * @return False if the telemetry should be prevented.
+ */
+export type TelemetryHandler = (type: TelemetryType, telemetry: Telemetry) => boolean;
 
 export interface TrackOptions {
   /**
@@ -92,11 +114,9 @@ export interface Options {
   /**
    * Custom handler to manipulate or suppress errors captured by the agent.
    *
-   * @param payload error payload to be sent to TrackJS.
-   * @returns false will suppress the error from being sent.
-   * @default (payload) => true
+   * @see {@link ErrorHandler}
    */
-  onError: (payload: CapturePayload) => boolean;
+  onError?: ErrorHandler
 
   /**
    * When environment has a user interface, the URI location where the application
@@ -147,7 +167,6 @@ export interface Options {
    * operating system, arch, and version. For non-browser environments, this can
    * be constructed with the userAgent() util function.
    *
-   * @see {@link userAgent}
    * @defaults ""
    */
   userAgent: string
